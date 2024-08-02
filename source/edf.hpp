@@ -1,11 +1,30 @@
+#ifndef EDF_H
+#define EDF_H
 #include <string>
 #include <vector>
+
+
+struct DataRecords{
+    std::string Label;
+    std::string Transducer; // specify the applied senso
+    std::string PhyisicalDimension; 
+    std::string PhysicalMinimum;
+    std::string PhysicalMaximum; // PMAX > PMIN, In case of a negative amplifier gain the corresponding PMAX < PMIN
+    std::string DigitalMinimum;
+    std::string DigitalMaximum; // PMIN != PMAX avoid division by 0
+    std::string Prefiltering; // HP:0.1Hz HighPass LP:75Hz LowPass N:50Hz Notch
+    std::string Nr; // sample in each data record
+    std::string ReservedDos;
+};
+
 
 class edf{
 
   public:
-    edf(std::string path);
+    edf(const std::string path);
     std::vector<std::vector<int>> DataRecord;
+    void PrintHeaderRecords();
+    void PrintDataRecords();
 
   private:
   // 61440 Max size for EDF file
@@ -19,16 +38,10 @@ class edf{
     std::string Reserved; // EDF+C continous , EDF+D discontinous
     std::string NumDataRecords; // number can be -1 during recording
     std::string DurationDataRecords;
-    std::string NumberSignals; // ns
-  // Data Records
-    std::string Label;
-    std::string Transducer; // specify the applied senso
-    std::string PhyisicalDimension; 
-    std::string PhysicalMinimum;
-    std::string PhysicalMaximum; // PMAX > PMIN, In case of a negative amplifier gain the corresponding PMAX < PMIN
-    std::string DigitalMinimum;
-    std::string DigitalMaximum; // PMIN != PMAX avoid division by 0
-    std::string Prefiltering; // HP:0.1Hz HighPass LP:75Hz LowPass N:50Hz Notch
-    std::string Nr; // sample in each data record
-    std::string ReservedDos;
+    int NumberSignals; // ns
+    // Data Records
+    std::vector<DataRecords> SignalsInfo;
 };
+
+
+#endif
