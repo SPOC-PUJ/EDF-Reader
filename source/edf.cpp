@@ -8,7 +8,7 @@
 
 
 edf::edf(const std::string path){
-  std::ifstream is(path);
+  std::ifstream is(path , std::ios::binary);
   if(!is.is_open()){
     std::cerr << "Error: Could not open the file " << path << std::endl;  
     throw std::runtime_error("Faile to open file");
@@ -79,8 +79,7 @@ edf::edf(const std::string path){
       std::cerr << "Error: Could not read the file (NumberDataRecords) " << path << std::endl;
       throw std::runtime_error("Failed to read file");
   }
-  NumDataRecords = std::string(buffer.data(), 8);
-
+  NumDataRecords = std::stoi(std::string(buffer.data(), 8));
 
  // Read DurationDataRecords
   is.read(buffer.data(), 8);
@@ -206,7 +205,7 @@ edf::edf(const std::string path){
         std::cerr << "Error: Could not read the file (nr) in signal number: " << i << std::endl;
         throw std::runtime_error("Failed to read file");
     }
-    SignalsInfo[i].Nr =  std::string(buffer.data(), 8);
+    SignalsInfo[i].Nr = std::stoi(std::string(buffer.data(), 8)) ;
 
   }
 
@@ -222,8 +221,50 @@ edf::edf(const std::string path){
 
   }
 
+  //reading Signals
 
+
+  /*for(int i= 0 ;i < ns; i++){
+
+    std::vector<int16_t> signalData;
+    for(int j = 0 ; j < SignalsInfo[i].Nr; j++){
+      
+      is.read(buffer.data(), 2);
+      if (!is) {
+          std::cerr << "Error: Could not read the file (Reading Signal) "<< std::endl;
+          throw std::runtime_error("Failed to read file");
+      }
+
+      int16_t value = (static_cast<uint8_t>(buffer[1]) << 8) | static_cast<uint8_t>(buffer[0]);
+      std::cout << "value casted: "<< value <<std::endl;
+      signalData.push_back(value);
+
+
+    }
+
+    Signals.push_back(signalData);
+
+  }*/
+  
+  for(int i=0 ;i<NumDataRecords;i++){
+    for (int j = 0 ; j < NumberSignals;j++){
+
+      for(int k = 0 ; k< SignalsInfo[j].Nr ;k++){
+        int16_t value;
+        is.read(reinterpret_cast<char*>(&value), sizeof(int16_t));
+        if (!is) {
+          std::cerr << "Error: Could not read the file (Reading Signal) "<< std::endl;
+          throw std::runtime_error("Failed to read file");
+        }
+        std::cout << "value casted: "<< value <<std::endl;
+
+      }
+
+    }
+
+  }
 }
+
 
 
 void edf::PrintHeaderRecords(){

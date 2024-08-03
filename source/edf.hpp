@@ -13,7 +13,7 @@ struct DataRecords{
     std::string DigitalMinimum;
     std::string DigitalMaximum; // PMIN != PMAX avoid division by 0
     std::string Prefiltering; // HP:0.1Hz HighPass LP:75Hz LowPass N:50Hz Notch
-    std::string Nr; // sample in each data record
+    int Nr; // sample in each data record
     std::string ReservedDos;
 };
 
@@ -22,7 +22,7 @@ class edf{
 
   public:
     edf(const std::string path);
-    std::vector<std::vector<int>> DataRecord;
+    std::vector<std::vector<int16_t>> Signals;
     void PrintHeaderRecords();
     void PrintDataRecords();
 
@@ -36,7 +36,7 @@ class edf{
     std::string StartTime;
     std::string SizeHeader;
     std::string Reserved; // EDF+C continous , EDF+D discontinous
-    std::string NumDataRecords; // number can be -1 during recording
+    int NumDataRecords; // number can be -1 during recording
     std::string DurationDataRecords;
     int NumberSignals; // ns
     // Data Records
