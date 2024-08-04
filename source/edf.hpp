@@ -26,7 +26,8 @@ class edf{
     void PrintHeaderRecords();
     void PrintDataRecords();
     void PrintSizeSignals();
-
+    void WriteRawCsv(const std::string filename);
+    void PrintTopValues(int i);
   private:
   // 61440 Max size for EDF file
   // Header Records

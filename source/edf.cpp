@@ -1,6 +1,7 @@
 #include "edf.hpp"
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -324,4 +325,64 @@ void edf::PrintSizeSignals(){
 
 }
 
+void edf::WriteRawCsv(const std::string filename){
+
+  std::ofstream file(filename);
+  if (!file.is_open()) {
+    std::cerr << "Error: Could not open the file " << filename << std::endl;
+    throw std::runtime_error("Failed to open file");
+  }
+
+  
+    // Write the header
+    for (int i = 0; i < NumberSignals; ++i) {
+        file << "Signal " << i;
+        if (i < NumberSignals - 1) {
+            file << ",";
+        }
+    }
+    file << "\n";
+
+    // Find the maximum length of signals
+    size_t max_length = 0;
+    for (const auto& signal : Signals) {
+        if (signal.size() > max_length) {
+            max_length = signal.size();
+        }
+    }
+
+    // Write the signals
+    for (size_t i = 0; i < max_length; ++i) {
+        for (int j = 0; j < NumberSignals; ++j) {
+            if (i < Signals[j].size()) {
+                file << Signals[j][i];
+            }
+            if (j < NumberSignals - 1) {
+                file << ",";
+            }
+        }
+        file << "\n";
+    }
+
+
+
+
+}
+
+
+void edf::PrintTopValues(int i){
+
+
+  for(const auto signali : Signals){
+    
+    for(int j=0;j<i;j++){
+      std::cout<< signali[j] <<" ";
+      
+    }
+
+    std::cout<< std::endl;
+
+  }
+
+}
 

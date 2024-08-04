@@ -17,6 +17,8 @@ int main (int argc, char *argv[]) {
         edfFile.PrintHeaderRecords();
         edfFile.PrintDataRecords();
         edfFile.PrintSizeSignals();
+        //edfFile.WriteRawCsv("signal.csv");
+        edfFile.PrintTopValues(10);
     } catch (const std::runtime_error& e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;
         return 1;
