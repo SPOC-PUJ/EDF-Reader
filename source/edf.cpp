@@ -245,7 +245,7 @@ edf::edf(const std::string path){
     Signals.push_back(signalData);
 
   }*/
-  
+  Signals.resize(NumberSignals);
   for(int i=0 ;i<NumDataRecords;i++){
     for (int j = 0 ; j < NumberSignals;j++){
 
@@ -256,13 +256,24 @@ edf::edf(const std::string path){
           std::cerr << "Error: Could not read the file (Reading Signal) "<< std::endl;
           throw std::runtime_error("Failed to read file");
         }
-        std::cout << "value casted: "<< value <<std::endl;
-
+        //std::cout << "value casted: "<< value <<std::endl;
+        Signals[j].push_back(value);
       }
 
     }
 
   }
+  /*std::cout<< "APARTIR DE AQUI ES FALTANTE" <<std::endl;
+  int16_t value;
+  while (!is.eof()) {
+    is.read(buffer.data(),1);
+    if (!is) {
+      std::cerr << "Error: Could not read the file (Reading Signal) "<< std::endl;
+      throw std::runtime_error("Failed to read file");
+    }
+    std::cout << "falto: "<< std::string(buffer.data(), 1)<<std::endl;
+  }*/
+
 }
 
 
@@ -299,6 +310,17 @@ void edf::PrintDataRecords(){
 
   }
   
+
+}
+
+void edf::PrintSizeSignals(){
+
+  for(const auto signali : Signals){
+    
+    std::cout<<"Size of the vector is: "<< signali.size() <<std::endl;
+
+  }
+
 
 }
 

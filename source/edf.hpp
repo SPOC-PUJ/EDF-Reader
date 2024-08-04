@@ -25,6 +25,7 @@ class edf{
     std::vector<std::vector<int16_t>> Signals;
     void PrintHeaderRecords();
     void PrintDataRecords();
+    void PrintSizeSignals();
 
   private:
   // 61440 Max size for EDF file

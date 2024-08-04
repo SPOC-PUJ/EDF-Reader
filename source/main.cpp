@@ -16,6 +16,7 @@ int main (int argc, char *argv[]) {
         std::cout << "File opened and read successfully." << std::endl;
         edfFile.PrintHeaderRecords();
         edfFile.PrintDataRecords();
+        edfFile.PrintSizeSignals();
     } catch (const std::runtime_error& e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;
         return 1;
