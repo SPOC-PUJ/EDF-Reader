@@ -1,5 +1,6 @@
 #ifndef EDF_H
 #define EDF_H
+#include "signaldata.hpp"
 #include <string>
 #include <vector>
 
@@ -22,7 +23,7 @@ class edf{
 
   public:
     edf(const std::string path);
-    std::vector<std::vector<int16_t>> Signals;
+    SignalData Signals;
     void PrintHeaderRecords();
     void PrintDataRecords();
     void PrintSizeSignals();

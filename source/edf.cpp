@@ -1,7 +1,6 @@
 #include "edf.hpp"
 #include <fstream>
 #include <iostream>
-#include <iterator>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -246,7 +245,7 @@ edf::edf(const std::string path){
     Signals.push_back(signalData);
 
   }*/
-  Signals.resize(NumberSignals);
+  Signals.Signals.resize(NumberSignals);
   for(int i=0 ;i<NumDataRecords;i++){
     for (int j = 0 ; j < NumberSignals;j++){
 
@@ -258,7 +257,7 @@ edf::edf(const std::string path){
           throw std::runtime_error("Failed to read file");
         }
         //std::cout << "value casted: "<< value <<std::endl;
-        Signals[j].push_back(value);
+        Signals.Signals[j].push_back(value);
       }
 
     }
@@ -316,7 +315,7 @@ void edf::PrintDataRecords(){
 
 void edf::PrintSizeSignals(){
 
-  for(const auto signali : Signals){
+  for(const auto signali : Signals.Signals){
     
     std::cout<<"Size of the vector is: "<< signali.size() <<std::endl;
 
@@ -345,7 +344,7 @@ void edf::WriteRawCsv(const std::string filename){
 
     // Find the maximum length of signals
     size_t max_length = 0;
-    for (const auto& signal : Signals) {
+    for (const auto& signal : Signals.Signals) {
         if (signal.size() > max_length) {
             max_length = signal.size();
         }
@@ -354,8 +353,8 @@ void edf::WriteRawCsv(const std::string filename){
     // Write the signals
     for (size_t i = 0; i < max_length; ++i) {
         for (int j = 0; j < NumberSignals; ++j) {
-            if (i < Signals[j].size()) {
-                file << Signals[j][i];
+            if (i < Signals.Signals[j].size()) {
+                file << Signals.Signals[j][i];
             }
             if (j < NumberSignals - 1) {
                 file << ",";
@@ -373,7 +372,7 @@ void edf::WriteRawCsv(const std::string filename){
 void edf::PrintTopValues(int i){
 
 
-  for(const auto signali : Signals){
+  for(const auto signali : Signals.Signals){
     
     for(int j=0;j<i;j++){
       std::cout<< signali[j] <<" ";
