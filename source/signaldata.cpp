@@ -1,5 +1,6 @@
 #include "signaldata.hpp"
-#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <ostream>
 SignalData::SignalData() : Signals{}, Means{}, StdDeviation{} {}
@@ -64,3 +65,33 @@ void SignalData::GenerateRandomSignals(size_t numSignals, size_t numSamples, flo
         Signals.push_back(signal);
     }
 }
+
+std::vector<int16_t> SignalData::FirstDifference(const std::vector<int16_t>& Input){
+  size_t Size = Input.size();
+
+  std::vector<int16_t> Output(Size);
+
+  if(Input.empty()) return Output;
+
+  Output[0] = Input[0];
+
+  for(int i = 1;i < Size ; i++ ){
+    Output[i] = Input[i] - Input[i-1];
+  }
+
+  return Output;
+}
+
+std::vector<int16_t> SignalData::RuningSum(const std::vector<int16_t>& Input){
+  size_t Size = Input.size();
+
+  std::vector<int16_t> Output(Size);
+
+  if(Input.empty()) return Output;
+  Output[0] = Input[0];
+  for (size_t i = 1; i < Size; ++i) {
+      Output[i] = Output[i - 1] + Input[i];
+  }
+  return Output;
+}
+

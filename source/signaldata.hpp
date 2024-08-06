@@ -18,6 +18,8 @@ public:
     void CalculateDeviation();
     void PrintMeanAndDeviation();
     void GenerateRandomSignals(size_t numSignals, size_t numSamples, float mean, float stddev);
+    std::vector<int16_t> RuningSum(const std::vector<int16_t>& Input);
+    std::vector<int16_t> FirstDifference(const std::vector<int16_t>& Input);
 private:
 
 };
