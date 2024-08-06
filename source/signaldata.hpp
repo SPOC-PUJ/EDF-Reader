@@ -5,6 +5,7 @@
 #include <vector>
 #include <numeric>
 #include <algorithm>
+#include <random>
 
 class SignalData {
 public:
@@ -16,6 +17,7 @@ public:
     void CalculateMeans();
     void CalculateDeviation();
     void PrintMeanAndDeviation();
+    void GenerateRandomSignals(size_t numSignals, size_t numSamples, float mean, float stddev);
 private:
 
 };

@@ -48,3 +48,19 @@ void SignalData::PrintMeanAndDeviation(){
 
 
 }
+
+
+void SignalData::GenerateRandomSignals(size_t numSignals, size_t numSamples, float mean, float stddev) {
+    Signals.clear();
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::normal_distribution<> dist(mean, stddev);
+
+    for (size_t i = 0; i < numSignals; ++i) {
+        std::vector<int16_t> signal;
+        for (size_t j = 0; j < numSamples; ++j) {
+            signal.push_back(static_cast<int16_t>(dist(gen)));
+        }
+        Signals.push_back(signal);
+    }
+}
