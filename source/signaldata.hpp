@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdint>
 #include <vector>
+#include "../Eigen/Dense"
 #include <numeric>
 #include <algorithm>
 #include <random>
@@ -10,16 +11,16 @@
 class SignalData {
 public:
     SignalData();
-    SignalData(std::vector<std::vector<int16_t>> InputSignal);
-    std::vector<std::vector<int16_t>> Signals;
-    std::vector<float> Means;
-    std::vector<float> StdDeviation;
+    SignalData(std::vector<Eigen::VectorXcd> InputSignal);
+    std::vector<Eigen::VectorXcd> Signals;
+    std::vector<std::complex<double>> Means;
+    std::vector<std::complex<double>> StdDeviation;
     void CalculateMeans();
     void CalculateDeviation();
     void PrintMeanAndDeviation();
-    void GenerateRandomSignals(size_t numSignals, size_t numSamples, float mean, float stddev);
-    std::vector<int16_t> RuningSum(const std::vector<int16_t>& Input);
-    std::vector<int16_t> FirstDifference(const std::vector<int16_t>& Input);
+    void GenerateRandomSignals(size_t numSignals, size_t numSamples, std::complex<double> mean, double stddev);
+    std::vector<std::complex<double>> RuningSum(const Eigen::VectorXcd& Input);
+    std::vector<std::complex<double>> FirstDifference(const Eigen::VectorXcd& Input);
 private:
 
 };
