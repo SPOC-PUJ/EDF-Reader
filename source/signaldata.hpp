@@ -21,6 +21,8 @@ public:
     void GenerateRandomSignals(size_t numSignals, size_t numSamples, std::complex<double> mean, double stddev);
     std::vector<std::complex<double>> RuningSum(const Eigen::VectorXcd& Input);
     std::vector<std::complex<double>> FirstDifference(const Eigen::VectorXcd& Input);
+    void FFT(Eigen::VectorXcd& a,bool invert =false);
+    void IFFT(Eigen::VectorXcd &a); 
 private:
 
 };

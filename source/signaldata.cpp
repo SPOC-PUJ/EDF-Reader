@@ -1,8 +1,12 @@
 #include "signaldata.hpp"
+#include <cmath>
 #include <complex>
 #include <cstddef>
 #include <iostream>
 #include <ostream>
+
+const double PI = acos(-1);
+
 SignalData::SignalData() : Signals{}, Means{}, StdDeviation{} {}
 
 SignalData::SignalData(std::vector<Eigen::VectorXcd> InputSignal)
@@ -98,3 +102,42 @@ std::vector<std::complex<double>> SignalData::RuningSum(const Eigen::VectorXcd& 
   return Output;
 }
 
+
+void SignalData::FFT(Eigen::VectorXcd& a,bool invert){
+
+  int n = a.size();
+  if (n<=1) return;
+    // Crear los vectores even y odd
+  Eigen::VectorXcd even(n / 2);
+  Eigen::VectorXcd odd(n / 2);
+
+  for (int i = 0; i < n / 2; ++i) {
+      even[i] = a[2 * i];
+      odd[i] = a[2 * i + 1];
+  }
+  FFT(even);
+  FFT(odd);
+  double angle = 2 * PI / n * (invert ? 1 : -1);
+  std::complex<double> w(1) ,wn(cos(angle),sin(angle));
+  for(int k = 0 ; k < n/2 ;k++){
+    std::complex<double> t = w * odd[k];
+    a[k] = even[k] + t;
+    a[k + n/2] = even[k] - t;
+
+
+    if (invert) {
+        a[k] /= 2;
+        a[k + n / 2] /= 2;
+    }
+
+    w *= wn;
+  }
+
+
+
+
+}
+
+void SignalData::IFFT(Eigen::VectorXcd &a) {
+    FFT(a, true);
+}
