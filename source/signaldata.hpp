@@ -21,10 +21,11 @@ public:
     void GenerateRandomSignals(size_t numSignals, size_t numSamples, std::complex<double> mean, double stddev);
     Eigen::VectorXcd RuningSum(const Eigen::VectorXcd& Input);
     Eigen::VectorXcd FirstDifference(const Eigen::VectorXcd& Input);
-    void FFT(Eigen::VectorXcd& a,bool invert =false);
-    void IFFT(Eigen::VectorXcd &a); 
+    Eigen::VectorXcd FFT(Eigen::VectorXcd &a);
+    Eigen::VectorXcd IFFT(Eigen::VectorXcd &a); 
+    Eigen::VectorXcd ZeroPadPowerTwo(const Eigen::VectorXcd &a);
 private:
-
+    Eigen::VectorXcd FFTAux(Eigen::VectorXcd a, bool invert = false);
 };
 
 

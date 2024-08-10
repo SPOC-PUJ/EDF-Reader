@@ -103,37 +103,76 @@ Eigen::VectorXcd SignalData::RuningSum(const Eigen::VectorXcd& Input){
 }
 
 
-void SignalData::FFT(Eigen::VectorXcd& a,bool invert){
+Eigen::VectorXcd SignalData::FFTAux(Eigen::VectorXcd a, bool invert){
+
+
+
+  if ((a.size() & (a.size() - 1)) != 0) {
+      a = ZeroPadPowerTwo(a);
+  }
+
 
   int n = a.size();
-  if (n<=1) return;
+  if (n<=1) return a;
     // Crear los vectores even y odd
     // Ensure even and odd are correctly sized
   Eigen::VectorXcd even = a(Eigen::seq(0, n - 1, 2));
   Eigen::VectorXcd odd = a(Eigen::seq(1, n - 1, 2));
-  FFT(even);
-  FFT(odd);
+    // Recursive FFT calls
+  even = FFTAux(even, invert);
+  odd = FFTAux(odd, invert);
+
   double angle = 2 * PI / n * (invert ? 1 : -1);
   std::complex<double> w(1) ,wn(cos(angle),sin(angle));
-  for(int k = 0 ; k < n/2 ;k++){
-    std::complex<double> t = w * odd[k];
-    a[k] = even[k] + t;
-    a[k + n/2] = even[k] - t;
+  Eigen::VectorXcd result(n);
 
+    for (int k = 0; k < n / 2; ++k) {
+        std::complex<double> t = w * odd[k];
+        result[k] = even[k] + t;
+        result[k + n / 2] = even[k] - t;
 
-    if (invert) {
-        a[k] /= 2;
-        a[k + n / 2] /= 2;
+        if (invert) {
+            result[k] /= 2;
+            result[k + n / 2] /= 2;
+        }
+
+        w *= wn;
     }
 
-    w *= wn;
-  }
+    return result;
 
 
 
 
 }
 
-void SignalData::IFFT(Eigen::VectorXcd &a) {
-    FFT(a, true);
+Eigen::VectorXcd SignalData::FFT(Eigen::VectorXcd &a){
+    int OrgSize = a.size();
+    return FFTAux(a, false).head(OrgSize);
+}
+
+
+Eigen::VectorXcd SignalData::IFFT(Eigen::VectorXcd &a){
+    int OrgSize = a.size();
+    return FFTAux(a, true).head(OrgSize);
+}
+
+
+Eigen::VectorXcd SignalData::ZeroPadPowerTwo(const Eigen::VectorXcd &a) {
+    int n = a.size();
+    int m = 1;
+
+    // Find the next power of 2 greater than or equal to n
+    while (m < n) m <<= 1;
+    // If n is already a power of two, return the original array
+    if (m == n) {
+        return a;
+    }
+    // Directly initializing the new VectorXcd with zero-padding
+    Eigen::VectorXcd padded_a = Eigen::VectorXcd::Zero(m);
+
+    // Copy the input vector into the beginning of the padded vector
+    padded_a.head(n) = a;
+
+    return padded_a;
 }

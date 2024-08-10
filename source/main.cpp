@@ -66,17 +66,29 @@ int main (int argc, char *argv[]) {
         // Write original sine wave to CSV
         write_to_csv("sine_wave_before_fft.csv", sine_wave);
 
-        edfFile.Signals.FFT(sine_wave);
+        auto after_fft = edfFile.Signals.FFT(sine_wave);
 
         // Write FFT result to CSV
-        write_to_csv("sine_wave_after_fft.csv", sine_wave);
+        write_to_csv("sine_wave_after_fft.csv", after_fft);
 
-        edfFile.Signals.IFFT(sine_wave);
+        auto after_iFFT = edfFile.Signals.IFFT(after_fft);
 
-        write_to_csv("sine_wave_after_Ifft.csv", sine_wave);
+        write_to_csv("sine_wave_after_Ifft.csv", after_iFFT);
 
         std::cout << "Sine wave data has been written to CSV files.\n";
 
+        write_to_csv("test_wave_before_fft.csv", edfFile.Signals.Signals[0]);
+
+        auto after_fft2 = edfFile.Signals.FFT(edfFile.Signals.Signals[0]);
+
+        // Write FFT result to CSV
+        write_to_csv("test_wave_after_fft.csv", after_fft2);
+
+        auto after_iFFT2 = edfFile.Signals.IFFT(after_fft2);
+
+        write_to_csv("test_wave_after_Ifft.csv", after_iFFT2);
+
+        std::cout << "Sine wave data has been written to CSV files.\n";
     } catch (const std::runtime_error& e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;
         return 1;
