@@ -73,10 +73,10 @@ void SignalData::GenerateRandomSignals(size_t numSignals, size_t numSamples, std
     }
 }
 
-std::vector<std::complex<double>> SignalData::FirstDifference(const Eigen::VectorXcd& Input){
+Eigen::VectorXcd SignalData::FirstDifference(const Eigen::VectorXcd& Input){
   size_t Size = Input.size();
 
-  std::vector<std::complex<double>> Output(Size);
+  Eigen::VectorXcd Output(Size);
 
   if(Input.size()<0) return Output;
 
@@ -89,10 +89,10 @@ std::vector<std::complex<double>> SignalData::FirstDifference(const Eigen::Vecto
   return Output;
 }
 
-std::vector<std::complex<double>> SignalData::RuningSum(const Eigen::VectorXcd& Input){
-  size_t Size = Input.size();
+Eigen::VectorXcd SignalData::RuningSum(const Eigen::VectorXcd& Input){
+  int Size = Input.size();
 
-  std::vector<std::complex<double>> Output(Size);
+  Eigen::VectorXcd Output(Size);
 
   if(Input.size()< 0) return Output;
   Output[0] = Input[0];
@@ -108,13 +108,9 @@ void SignalData::FFT(Eigen::VectorXcd& a,bool invert){
   int n = a.size();
   if (n<=1) return;
     // Crear los vectores even y odd
-  Eigen::VectorXcd even(n / 2);
-  Eigen::VectorXcd odd(n / 2);
-
-  for (int i = 0; i < n / 2; ++i) {
-      even[i] = a[2 * i];
-      odd[i] = a[2 * i + 1];
-  }
+    // Ensure even and odd are correctly sized
+  Eigen::VectorXcd even = a(Eigen::seq(0, n - 1, 2));
+  Eigen::VectorXcd odd = a(Eigen::seq(1, n - 1, 2));
   FFT(even);
   FFT(odd);
   double angle = 2 * PI / n * (invert ? 1 : -1);
