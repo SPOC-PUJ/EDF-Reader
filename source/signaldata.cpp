@@ -176,3 +176,38 @@ Eigen::VectorXcd SignalData::ZeroPadPowerTwo(const Eigen::VectorXcd &a) {
 
     return padded_a;
 }
+
+
+Eigen::VectorXcd SignalData::MovingAverage(const Eigen::VectorXcd &a, int window_size) {
+    int n = a.size();
+    Eigen::VectorXcd result(n);
+
+    // Asegurarse de que el tamaño de la ventana sea válido
+    if (window_size <= 0 || window_size > n) {
+        throw std::invalid_argument("El tamaño de la ventana debe ser mayor que 0 y menor o igual al tamaño de la señal.");
+    }
+
+    // Inicializar la suma para la primera ventana
+    std::complex<double> sum = 0.0;
+    for (int i = 0; i < window_size; ++i) {
+        sum += a[i];
+    }
+
+    // Calcular el promedio para el primer elemento del resultado
+    result[0] = sum / static_cast<double>(window_size);
+
+    // Aplicar el filtro
+    for (int i = 1; i <= n - window_size; ++i) {
+        sum += a[i + window_size - 1];  // Añadir el nuevo elemento en la ventana
+        sum -= a[i - 1];  // Restar el elemento que sale de la ventana
+        result[i] = sum / static_cast<double>(window_size);
+    }
+
+    // Rellenar los últimos elementos (si la ventana no cubre toda la señal)
+    for (int i = n - window_size + 1; i < n; ++i) {
+        result[i] = result[i - 1];
+    }
+
+    return result;
+}
+

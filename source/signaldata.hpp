@@ -24,6 +24,7 @@ public:
     Eigen::VectorXcd FFT(Eigen::VectorXcd &a);
     Eigen::VectorXcd IFFT(Eigen::VectorXcd &a); 
     Eigen::VectorXcd ZeroPadPowerTwo(const Eigen::VectorXcd &a);
+    Eigen::VectorXcd MovingAverage(const Eigen::VectorXcd &a,int  window_size);
 private:
     Eigen::VectorXcd FFTAux(Eigen::VectorXcd a, bool invert = false);
 };

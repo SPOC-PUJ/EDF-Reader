@@ -88,6 +88,10 @@ int main (int argc, char *argv[]) {
 
         write_to_csv("test_wave_after_Ifft.csv", after_iFFT2);
 
+        auto aftter_moving_avergae = edfFile.Signals.MovingAverage(edfFile.Signals.Signals[0], 11);
+
+        write_to_csv("test_wave_after_Avergae.csv", aftter_moving_avergae);
+
         std::cout << "Sine wave data has been written to CSV files.\n";
     } catch (const std::runtime_error& e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;
