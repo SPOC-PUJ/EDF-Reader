@@ -15,7 +15,7 @@ void edf::parseEDFData(const std::string& data) {
     std::istringstream is(data);
     std::vector<char> buffer(80); // Single buffer for reading
 
-  // Read Version
+    // Read Version
   is.read(buffer.data(), 8);
   if (!is) {
       std::cerr << "Error: Could not read the file (Version) " << data << std::endl;
@@ -244,24 +244,53 @@ void edf::parseEDFData(const std::string& data) {
     Signals.push_back(signalData);
 
   }*/
-  Signals.Signals.resize(NumberSignals);
+  std::vector< std::vector<std::complex<double> > > vectors(NumberSignals);
+
   for(int i=0 ;i<NumDataRecords;i++){
     for (int j = 0 ; j < NumberSignals;j++){
 
       for(int k = 0 ; k< SignalsInfo[j].Nr ;k++){
-        int16_t value;
-        is.read(reinterpret_cast<char*>(&value), sizeof(int16_t));
+        //std::int16_t value;
+        is.read(buffer.data(), sizeof(int16_t));
+        
         if (!is) {
           std::cerr << "Error: Could not read the file (Reading Signal) "<< std::endl;
           throw std::runtime_error("Failed to read file");
         }
-        //std::cout << "value casted: "<< value <<std::endl;
-        Signals.Signals[j].push_back(value);
+        // Convert buffer to int16_t
+        std::int16_t value = *reinterpret_cast<std::int16_t*>(buffer.data());
+                
+        // Print the buffer content
+        std::cout << "Buffer data: ";
+        for (char byte : buffer) {
+          std::cout << std::hex << static_cast<int>(static_cast<unsigned char>(byte)) << " ";
+        }
+        std::cout << std::endl;
+        if(k==10){
+          break;
+        }
+        std::cout << "El value es:" << value << std::endl;
+        double realPart = static_cast<double>(value); // Convert to double
+
+        std::complex<double> complexNum(realPart, 0.0); // Create complex number with real part and imaginary part as 0
+
+        vectors[j].push_back(value);
       }
 
     }
 
   }
+  for(auto const newSignal : vectors){
+
+    Eigen::VectorXcd eigenVec(newSignal.size());
+    for (size_t i = 0; i < newSignal.size(); ++i) {
+        eigenVec[i] = newSignal[i];
+    }
+    Signals.Signals.push_back(eigenVec);
+  } 
+
+
+
   /*std::cout<< "APARTIR DE AQUI ES FALTANTE" <<std::endl;
   int16_t value;
   while (!is.eof()) {
@@ -272,7 +301,6 @@ void edf::parseEDFData(const std::string& data) {
     }
     std::cout << "falto: "<< std::string(buffer.data(), 1)<<std::endl;
   }*/
-
     
 }
 
@@ -339,3 +367,4 @@ void edf::PrintTopValues(int i){
   }
 
 }
+
