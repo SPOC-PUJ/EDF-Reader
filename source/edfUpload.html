@@ -11,8 +11,8 @@
     <pre id="output"></pre>
 
     <script src="edf.js"></script>
+    
     <script>
-        // This function will run when the WebAssembly module is fully initialized
         Module['onRuntimeInitialized'] = function() {
             const fileInput = document.getElementById('fileInput');
             const output = document.getElementById('output');
@@ -22,28 +22,29 @@
                 const reader = new FileReader();
 
                 reader.onload = (e) => {
-                    const fileData = e.target.result;
+                    var data = new Uint8Array(reader.result)
 
-                    // Initialize the EDF class in WebAssembly
-                    const edf = new Module.EDF(fileData);
+                    Module['FS_createDataFile']('/', 'filename', data, true, true, true);
+                    
 
-                    // Capture output from WebAssembly methods
-                    output.textContent += "Header Records:\n";
-                    //edf.PrintHeaderRecords();
-
-                    output.textContent += "\nData Records:\n";
-                    //edf.PrintDataRecords();
-
-                    output.textContent += "\nSize of Signals:\n";
-                    //edf.PrintSizeSignals();
-
-                    output.textContent += "\nTop 5 Values:\n";
-                    edf.PrintTopValues(5);
+                    
+                    var edfInstance = new Module.EDF('filename'); 
+                    
+                    // Llamadas a funciones de la instancia edfInstance
+                    edfInstance.PrintHeaderRecords();
+                    edfInstance.PrintDataRecords();
+                    edfInstance.PrintSizeSignals();
+                    edfInstance.PrintTopValues(5);
+                    
+                    fileInput.value = '';
+                    
                 };
 
-                reader.readAsBinaryString(file);
+                reader.readAsArrayBuffer(file); // Read as binary data
             });
         };
+
     </script>
+    
 </body>
 </html>

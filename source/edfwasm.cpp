@@ -3,22 +3,29 @@
 #include "edfwasm.hpp"
 #include <fstream>
 #include <iostream>
+
 #include <ostream>
 #include <stdexcept>
 #include <string>
 #include <sstream> 
-edf::edf( const  std::string& fileData) {
+#include <vector>
+edf::edf(  const std::string& fileData) {
     parseEDFData(fileData);
 }
 
-void edf::parseEDFData(const std::string& data) {
-    std::istringstream is(data);
+
+void edf::parseEDFData(const std::string& path) {
+    std::ifstream is(path , std::ios::binary);
+    if(!is.is_open()){
+      std::cerr << "Error: Could not open the file " << path << std::endl;  
+      throw std::runtime_error("Faile to open file");
+    }
     std::vector<char> buffer(80); // Single buffer for reading
 
     // Read Version
   is.read(buffer.data(), 8);
   if (!is) {
-      std::cerr << "Error: Could not read the file (Version) " << data << std::endl;
+      //std::cerr << "Error: Could not read the file (Version) " << data << std::endl;
       throw std::runtime_error("Failed to read file");
   }
   Version = std::string(buffer.data(), 8);
@@ -26,7 +33,7 @@ void edf::parseEDFData(const std::string& data) {
   // Read PatientId
   is.read(buffer.data(), 80);
   if (!is) {
-      std::cerr << "Error: Could not read the file (PatientId) " << data << std::endl;
+      //std::cerr << "Error: Could not read the file (PatientId) " << data << std::endl;
       throw std::runtime_error("Failed to read file");
   }
   PatientId = std::string(buffer.data(), 80);
@@ -34,7 +41,7 @@ void edf::parseEDFData(const std::string& data) {
   // Read RecordingID
   is.read(buffer.data(), 80);
   if (!is) {
-      std::cerr << "Error: Could not read the file (RecordingID) " << data << std::endl;
+      //std::cerr << "Error: Could not read the file (RecordingID) " << data << std::endl;
       throw std::runtime_error("Failed to read file");
   }
   RecordingId = std::string(buffer.data(), 80);
@@ -42,7 +49,7 @@ void edf::parseEDFData(const std::string& data) {
   // Read StartDate
   is.read(buffer.data(), 8);
   if (!is) {
-      std::cerr << "Error: Could not read the file (StartDate) " << data << std::endl;
+      //std::cerr << "Error: Could not read the file (StartDate) " << data << std::endl;
       throw std::runtime_error("Failed to read file");
   }
   StartDate = std::string(buffer.data(), 8);
@@ -51,7 +58,7 @@ void edf::parseEDFData(const std::string& data) {
   // Read StartDate
   is.read(buffer.data(), 8);
   if (!is) {
-      std::cerr << "Error: Could not read the file (StartTime) " << data << std::endl;
+      //std::cerr << "Error: Could not read the file (StartTime) " << data << std::endl;
       throw std::runtime_error("Failed to read file");
   }
   StartTime = std::string(buffer.data(), 8);
@@ -59,7 +66,7 @@ void edf::parseEDFData(const std::string& data) {
   // Read SizeHeader
   is.read(buffer.data(), 8);
   if (!is) {
-      std::cerr << "Error: Could not read the file (Number of bytes) " << data << std::endl;
+      //std::cerr << "Error: Could not read the file (Number of bytes) " << data << std::endl;
       throw std::runtime_error("Failed to read file");
   }
   SizeHeader = std::string(buffer.data(), 8);
@@ -67,7 +74,7 @@ void edf::parseEDFData(const std::string& data) {
  // Read Reserved
   is.read(buffer.data(), 44);
   if (!is) {
-      std::cerr << "Error: Could not read the file (Reserved) " << data << std::endl;
+      //std::cerr << "Error: Could not read the file (Reserved) " << data << std::endl;
       throw std::runtime_error("Failed to read file");
   }
   Reserved = std::string(buffer.data(), 44);
@@ -75,7 +82,7 @@ void edf::parseEDFData(const std::string& data) {
  // Read NumberDataRecords
   is.read(buffer.data(), 8);
   if (!is) {
-      std::cerr << "Error: Could not read the file (NumberDataRecords) " << data << std::endl;
+      //std::cerr << "Error: Could not read the file (NumberDataRecords) " << data << std::endl;
       throw std::runtime_error("Failed to read file");
   }
   NumDataRecords = std::stoi(std::string(buffer.data(), 8));
@@ -83,7 +90,7 @@ void edf::parseEDFData(const std::string& data) {
  // Read DurationDataRecords
   is.read(buffer.data(), 8);
   if (!is) {
-      std::cerr << "Error: Could not read the file (DurationDataRecords) " << data << std::endl;
+      //std::cerr << "Error: Could not read the file (DurationDataRecords) " << data << std::endl;
       throw std::runtime_error("Failed to read file");
   }
   DurationDataRecords = std::string(buffer.data(), 8);
@@ -91,7 +98,7 @@ void edf::parseEDFData(const std::string& data) {
   // Read DurationDataRecords
   is.read(buffer.data(), 4);
   if (!is) {
-      std::cerr << "Error: Could not read the file (NumberSignals) " << data << std::endl;
+      //std::cerr << "Error: Could not read the file (NumberSignals) " << data << std::endl;
       throw std::runtime_error("Failed to read file");
   }
   NumberSignals = std::stoi(std::string(buffer.data(), 4));
@@ -244,34 +251,22 @@ void edf::parseEDFData(const std::string& data) {
     Signals.push_back(signalData);
 
   }*/
-  std::vector< std::vector<std::complex<double> > > vectors(NumberSignals);
+    std::vector< std::vector<std::complex<double> > > vectors(NumberSignals);
 
   for(int i=0 ;i<NumDataRecords;i++){
     for (int j = 0 ; j < NumberSignals;j++){
 
       for(int k = 0 ; k< SignalsInfo[j].Nr ;k++){
-        //std::int16_t value;
-        is.read(buffer.data(), sizeof(int16_t));
-        
+        std::int16_t value;
+        is.read(reinterpret_cast<char*>(&value), sizeof(int16_t));
         if (!is) {
           std::cerr << "Error: Could not read the file (Reading Signal) "<< std::endl;
           throw std::runtime_error("Failed to read file");
         }
-        // Convert buffer to int16_t
-        std::int16_t value = *reinterpret_cast<std::int16_t*>(buffer.data());
-                
-        // Print the buffer content
-        std::cout << "Buffer data: ";
-        for (char byte : buffer) {
-          std::cout << std::hex << static_cast<int>(static_cast<unsigned char>(byte)) << " ";
-        }
-        std::cout << std::endl;
-        if(k==10){
-          break;
-        }
-        std::cout << "El value es:" << value << std::endl;
+        
+        //std::cout << "value casted: "<< value <<std::endl;
         double realPart = static_cast<double>(value); // Convert to double
-
+    
         std::complex<double> complexNum(realPart, 0.0); // Create complex number with real part and imaginary part as 0
 
         vectors[j].push_back(value);
