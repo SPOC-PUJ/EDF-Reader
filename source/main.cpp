@@ -4,6 +4,19 @@
 #include <ostream>
 #include <string>
 const double PI = acos(-1);
+
+
+
+void ExportToCSV(const Eigen::VectorXcd& approximation, const Eigen::VectorXcd& detail, const std::string& filename) {
+    std::ofstream file(filename);
+    
+    file << "Index,Approximation,Detail\n";
+    for (size_t i = 0; i < approximation.size(); ++i) {
+        file << i << "," << approximation[i].real() << "," << detail[i].real() << "\n";
+    }
+    
+    file.close();
+}
 void write_to_csv(const std::string& filename, const Eigen::VectorXcd& data) {
     std::ofstream file(filename);
 
@@ -17,7 +30,18 @@ void write_to_csv(const std::string& filename, const Eigen::VectorXcd& data) {
         std::cerr << "Unable to open file: " << filename << std::endl;
     }
 }
+Eigen::VectorXcd GenerateChirpSignal(size_t numSamples, double startFreq, double endFreq, double duration, double samplingRate) {
+    Eigen::VectorXcd chirpSignal(numSamples);
+    double t;
 
+    for (size_t i = 0; i < numSamples; ++i) {
+        t = i / samplingRate;  // Current time
+        double freq = startFreq + ((endFreq - startFreq) / duration) * t;  // Instantaneous frequency
+        chirpSignal[i] = std::polar(1.0, 2 * PI * freq * t);  // Generate the chirp signal
+    }
+
+    return chirpSignal;
+}
 
 int main (int argc, char *argv[]) {
   
@@ -51,7 +75,7 @@ int main (int argc, char *argv[]) {
         }
         std::cout << std::endl;*/
         
-        int N = 32768; // Number of samples
+        /*int N = 32768; // Number of samples
         double T = 1.0 / N; // Sampling period
         double freq = 2.0; // Frequency of the sine wave
 
@@ -92,7 +116,19 @@ int main (int argc, char *argv[]) {
 
         write_to_csv("test_wave_after_Avergae.csv", aftter_moving_avergae);
 
-        std::cout << "Sine wave data has been written to CSV files.\n";
+        std::cout << "Sine wave data has been written to CSV files.\n";*/
+      size_t numSamples = 1024;  // Number of samples
+      double startFreq = 20.0;   // Start frequency in Hz
+      double endFreq = 100.0;    // End frequency in Hz
+      double duration = 1.0;     // Duration of the signal in seconds
+      double samplingRate = 1024.0; // Sampling rate in Hz
+
+      // Generate the chirp signal
+
+      Eigen::VectorXcd chirpSignal = GenerateChirpSignal(numSamples, startFreq, endFreq, duration, samplingRate);
+      write_to_csv("chirp_wave_before_.csv", chirpSignal);
+      auto [approximation, detail] =edfFile.Signals.FastWaveletTransformHaar(chirpSignal);
+      ExportToCSV(approximation, detail, "wavelet_output.csv");
     } catch (const std::runtime_error& e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;
         return 1;

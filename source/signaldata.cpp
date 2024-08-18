@@ -210,4 +210,19 @@ Eigen::VectorXcd SignalData::MovingAverage(const Eigen::VectorXcd &a, int window
 
     return result;
 }
+std::pair<Eigen::VectorXcd, Eigen::VectorXcd> SignalData::FastWaveletTransformHaar(const Eigen::VectorXcd& input) {
+    size_t n = input.size();
+    Eigen::VectorXcd approximation(n / 2);
+    Eigen::VectorXcd detail(n / 2);
 
+    // Haar Wavelet Filters
+    std::vector<double> low_pass_filter = {0.5, 0.5};
+    std::vector<double> high_pass_filter = {0.5, -0.5};
+
+    for (size_t i = 0; i < n / 2; ++i) {
+        approximation[i] = low_pass_filter[0] * input[2 * i] + low_pass_filter[1] * input[2 * i + 1];
+        detail[i] = high_pass_filter[0] * input[2 * i] + high_pass_filter[1] * input[2 * i + 1];
+    }
+
+    return std::make_pair(approximation, detail);
+}

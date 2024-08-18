@@ -25,6 +25,8 @@ public:
     Eigen::VectorXcd IFFT(Eigen::VectorXcd &a); 
     Eigen::VectorXcd ZeroPadPowerTwo(const Eigen::VectorXcd &a);
     Eigen::VectorXcd MovingAverage(const Eigen::VectorXcd &a,int  window_size);
+    void DownSample2();
+  std::pair<Eigen::VectorXcd, Eigen::VectorXcd> FastWaveletTransformHaar(const Eigen::VectorXcd& input);
 private:
     Eigen::VectorXcd FFTAux(Eigen::VectorXcd a, bool invert = false);
 };
