@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDF File Processor</title>
+</head>
+<body>
+    <h1>EDF File Processor</h1>
+    <input type="file" id="fileInput" >
+    <pre id="output"></pre>
+
+    <script src="edf.js"></script>
+    
+    <script>
+        Module['onRuntimeInitialized'] = function() {
+            const fileInput = document.getElementById('fileInput');
+            const output = document.getElementById('output');
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    var data = new Uint8Array(reader.result)
+
+                    Module['FS_createDataFile']('/', 'filename', data, true, true, true);
+                    
+
+                    
+                    var edfInstance = new Module.EDF('filename'); 
+                    
+                    // Llamadas a funciones de la instancia edfInstance
+                    edfInstance.PrintHeaderRecords();
+                    edfInstance.PrintDataRecords();
+                    edfInstance.PrintSizeSignals();
+                    edfInstance.PrintTopValues(5);
+                    
+                    fileInput.value = '';
+                    
+                };
+
+                reader.readAsArrayBuffer(file); // Read as binary data
+            });
+        };
+
+    </script>
+    
+</body>
+</html>
