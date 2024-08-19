@@ -1,4 +1,5 @@
 #include "edf.hpp"
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <ostream>
@@ -42,7 +43,19 @@ Eigen::VectorXcd GenerateChirpSignal(size_t numSamples, double startFreq, double
 
     return chirpSignal;
 }
+Eigen::VectorXcd CreateGaborFilter(int size, double center_freq, double sigma) {
+    Eigen::VectorXcd filter(size);
+    double T = 1.0 / size; // Sampling period
+    double mid = size / 2.0;
 
+    for (int i = 0; i < size; ++i) {
+        double t = (i - mid) * T; // Time index centered at zero
+        // Gabor filter formula: Gaussian envelope * cosine wave
+        filter[i] = std::exp(-t * t / (2 * sigma * sigma)) * std::cos(2 * PI * center_freq * t);
+    }
+
+    return filter;
+}
 int main (int argc, char *argv[]) {
   
     if(argc != 2){
@@ -75,7 +88,7 @@ int main (int argc, char *argv[]) {
         }
         std::cout << std::endl;*/
         
-        /*int N = 32768; // Number of samples
+        int N = 32768; // Number of samples
         double T = 1.0 / N; // Sampling period
         double freq = 2.0; // Frequency of the sine wave
 
@@ -88,7 +101,7 @@ int main (int argc, char *argv[]) {
         }
 
         // Write original sine wave to CSV
-        write_to_csv("sine_wave_before_fft.csv", sine_wave);
+        /*write_to_csv("sine_wave_before_fft.csv", sine_wave);
 
         auto after_fft = edfFile.Signals.FFT(sine_wave);
 
@@ -117,6 +130,30 @@ int main (int argc, char *argv[]) {
         write_to_csv("test_wave_after_Avergae.csv", aftter_moving_avergae);
 
         std::cout << "Sine wave data has been written to CSV files.\n";*/
+      // Create Gabor filter
+      int filter_size = 1024; // Choose a smaller size for the filter
+      double center_freq = 5.0; // Center frequency of the Gabor filter
+      double sigma = 0.005; // Width of the Gaussian envelope
+      Eigen::VectorXcd gabor_filter = CreateGaborFilter(filter_size, center_freq, sigma);
+
+      // Perform convolution using the filter
+      SignalData signalData; // Assuming SignalData is your class
+      auto start = std::chrono::high_resolution_clock::now();
+      Eigen::VectorXcd convolved_signal = signalData.Convolve(sine_wave, gabor_filter);
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> direct_conv_time = end - start;
+      std::cout << "Direct Convolution Time: " << direct_conv_time.count() << " seconds" << std::endl;
+      write_to_csv("test_wave_after_convolve.csv", convolved_signal);
+
+      // Alternatively, you can use FFT-based convolution
+      start = std::chrono::high_resolution_clock::now();
+      Eigen::VectorXcd fft_convolved_signal = signalData.FFTConvolve(sine_wave, gabor_filter);
+      end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> fft_conv_time = end - start;
+      std::cout << "FFT Convolution Time: " << fft_conv_time.count() << " seconds" << std::endl;
+
+      write_to_csv("test_wave_after_fftConvolve.csv", fft_convolved_signal);
+
       size_t numSamples = 1024;  // Number of samples
       double startFreq = 20.0;   // Start frequency in Hz
       double endFreq = 100.0;    // End frequency in Hz

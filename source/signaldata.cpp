@@ -177,6 +177,62 @@ Eigen::VectorXcd SignalData::ZeroPadPowerTwo(const Eigen::VectorXcd &a) {
     return padded_a;
 }
 
+Eigen::VectorXcd SignalData::ZeroPadGivenSize(const Eigen::VectorXcd &a,int m) {
+    int n = a.size();
+
+    // If n is already a power of two, return the original array
+    if (m == n) {
+        return a;
+    }
+    // Directly initializing the new VectorXcd with zero-padding
+    Eigen::VectorXcd padded_a = Eigen::VectorXcd::Zero(m);
+
+    // Copy the input vector into the beginning of the padded vector
+    padded_a.head(n) = a;
+
+    return padded_a;
+}
+// Assuming this method is part of SignalData class
+Eigen::VectorXcd SignalData::Convolve(const Eigen::VectorXcd& x, const Eigen::VectorXcd& h) {
+    int x_size = x.size();
+    int h_size = h.size();
+    int y_size = x_size + h_size - 1;
+
+    Eigen::VectorXcd y = Eigen::VectorXcd::Zero(y_size);
+
+    for (int n = 0; n < y_size; ++n) {
+        for (int m = std::max(0, n + 1 - h_size); m <= std::min(n, x_size - 1); ++m) {
+            y[n] += x[m] * h[n - m];
+        }
+    }
+
+    return y;
+}
+
+
+Eigen::VectorXcd SignalData::FFTConvolve(const Eigen::VectorXcd& x, const Eigen::VectorXcd& h) {
+    // Calculate the size for zero padding (next power of two greater than x_size + h_size - 1)
+    int n = x.size() + h.size() - 1;
+    int m = 1;
+    while (m < n) m <<= 1;
+
+    // Zero pad both signals
+    Eigen::VectorXcd x_padded = ZeroPadGivenSize(x,m);
+    Eigen::VectorXcd h_padded = ZeroPadGivenSize(h,m);
+
+    // Perform FFT on both signals
+    Eigen::VectorXcd X = FFT(x_padded);
+    Eigen::VectorXcd H = FFT(h_padded);
+
+    // Multiply the FFT results element-wise
+    Eigen::VectorXcd Y = X.cwiseProduct(H);
+
+    // Perform IFFT to obtain the convolved signal
+    Eigen::VectorXcd y_padded = IFFT(Y);
+
+    // Trim the padded result to the expected convolution length
+    return y_padded.head(n);
+}
 
 Eigen::VectorXcd SignalData::MovingAverage(const Eigen::VectorXcd &a, int window_size) {
     int n = a.size();
