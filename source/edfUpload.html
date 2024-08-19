@@ -36,6 +36,29 @@
                     edfInstance.PrintSizeSignals();
                     edfInstance.PrintTopValues(5);
                     
+                    console.log(edfInstance);
+
+                    const signalsInstance = edfInstance.Signals;
+
+                    console.log(signalsInstance);
+
+                    signalsInstance.CalculateMeans();
+                    signalsInstance.CalculateDeviation();
+                    signalsInstance.PrintMeanAndDeviation();
+
+                    var sigInstanc =  signalsInstance.signals;
+
+                    console.log(sigInstanc);
+                    if (sigInstanc.size() !== 0) {
+                        console.log(sigInstanc.size());
+                        
+                        console.log('signals found.');
+                    }
+
+                    console.log(sigInstanc.get(1));
+                    
+                    
+
                     fileInput.value = '';
                     
                 };
