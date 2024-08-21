@@ -2,6 +2,7 @@
 #define SIGNAL_DATA_H
 #include <cmath>
 #include <cstdint>
+#include <string>
 #include <vector>
 #include "../Eigen/Dense"
 #include <numeric>
@@ -30,6 +31,8 @@ public:
     Eigen::VectorXcd Convolve(const Eigen::VectorXcd& x, const Eigen::VectorXcd& h);
     std::pair<Eigen::VectorXcd, Eigen::VectorXcd> FastWaveletTransformHaar(const Eigen::VectorXcd& input);
     Eigen::VectorXcd FFTConvolve(const Eigen::VectorXcd& x, const Eigen::VectorXcd& h); 
+    std::pair< std::vector< Eigen::VectorXcd >, std::vector< Eigen::VectorXcd > > FastWaveletTransform(const Eigen::VectorXcd& input,int DecLevel,std::string WaveName);
+    std::pair<Eigen::VectorXcd,Eigen::VectorXcd> FastWaveletTransformAux(const Eigen::VectorXcd& input,Eigen::VectorXcd Lo_d , Eigen::VectorXcd Hi_d);
 private:
     Eigen::VectorXcd FFTAux(Eigen::VectorXcd a, bool invert = false);
 };

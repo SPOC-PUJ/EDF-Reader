@@ -1,11 +1,38 @@
 #include "signaldata.hpp"
-#include <cmath>
 #include <complex>
 #include <cstddef>
 #include <iostream>
 #include <ostream>
+#include <utility>
+#include <vector>
 
 const double PI = acos(-1);
+    // db1 :
+    const Eigen::VectorXcd Db1DecLow {{std::complex<double>(0.7071067812, 0.0), std::complex<double>(0.7071067812, 0.0)}};
+    
+    const Eigen::VectorXcd Db1DecHigh   {{std::complex<double>(-0.7071067812, 0.0), std::complex<double>(0.7071067812, 0.0)}};
+
+    // db2 :
+    const Eigen::VectorXcd Db2DecLow  {{std::complex<double>(-0.1294095226, 0.0), std::complex<double>(0.2241438680, 0.0),std::complex<double>(0.8365163037, 0.0), std::complex<double>(0.4829629131, 0.0)}};
+
+    const Eigen::VectorXcd Db2DecHigh {{std::complex<double>(-0.4829629131, 0.0), std::complex<double>(0.8365163037, 0.0),std::complex<double>(-0.2241438680, 0.0), std::complex<double>(-0.1294095226, 0.0)}};
+
+
+    // db3 :
+    const Eigen::VectorXcd Db3DecLow  {{ std::complex<double>(0.0352262919, 0.0), std::complex<double>(-0.0854412739, 0.0),std::complex<double>(-0.1350110200, 0.0), std::complex<double>(0.4598775021, 0.0),std::complex<double>(0.8068915093, 0.0), std::complex<double>(0.3326705530, 0.0)}};
+
+    const Eigen::VectorXcd Db3DecHigh  {{ std::complex<double>(-0.3326705530, 0.0), std::complex<double>(0.8068915093, 0.0),std::complex<double>(-0.4598775021, 0.0), std::complex<double>(-0.1350110200, 0.0),std::complex<double>(0.0854412739, 0.0), std::complex<double>(0.0352262919, 0.0)}};
+
+    // db4 :
+    const Eigen::VectorXcd Db4DecLow  {{std::complex<double>(-0.0105974018, 0.0), std::complex<double>(0.0328830117, 0.0),std::complex<double>(0.0308413818, 0.0), std::complex<double>(-0.1870348117, 0.0),std::complex<double>(-0.0279837694, 0.0), std::complex<double>(0.6308807679, 0.0),std::complex<double>(0.7148465706, 0.0), std::complex<double>(0.2303778133, 0.0)}};
+
+    const Eigen::VectorXcd Db4DecHigh  {{std::complex<double>(-0.2303778133, 0.0), std::complex<double>(0.7148465706, 0.0),std::complex<double>(-0.6308807679, 0.0), std::complex<double>(-0.0279837694, 0.0),std::complex<double>(0.1870348117, 0.0), std::complex<double>(0.0308413818, 0.0),std::complex<double>(-0.0328830117, 0.0), std::complex<double>(-0.0105974018, 0.0)}};
+
+    // bior 3.1
+    const Eigen::VectorXcd Bio31DecLow  {{std::complex<double>(-0.3535533905932738, 0.0), std::complex<double>(1.0606601717798212, 0.0),std::complex<double>(1.0606601717798212, 0.0), std::complex<double>(-0.3535533905932738, 0.0)}};
+
+    const Eigen::VectorXcd Bio31DecHigh  {{std::complex<double>(-0.1767766952966369, 0.0), std::complex<double>(0.5303300858899106, 0.0),std::complex<double>(-0.5303300858899106, 0.0), std::complex<double>(0.1767766952966369, 0.0)}};
+
 
 SignalData::SignalData() : Signals{}, Means{}, StdDeviation{} {}
 
@@ -282,3 +309,67 @@ std::pair<Eigen::VectorXcd, Eigen::VectorXcd> SignalData::FastWaveletTransformHa
 
     return std::make_pair(approximation, detail);
 }
+
+std::pair< std::vector< Eigen::VectorXcd >, std::vector< Eigen::VectorXcd > > SignalData::FastWaveletTransform(const Eigen::VectorXcd& input,int DecLevel,std::string WaveName){
+
+    std::vector<Eigen::VectorXcd>Aproximations;
+    std::vector<Eigen::VectorXcd>Details;
+    const auto getWaveletFilters = [](const std::string& waveName) -> std::pair<Eigen::VectorXcd, Eigen::VectorXcd> {
+        if (waveName == "db1") {
+            return std::make_pair(Db1DecLow, Db1DecHigh);
+        } else if (waveName == "db2") {
+            return std::make_pair(Db2DecLow, Db2DecHigh);
+        } else if (waveName == "db3") {
+            return std::make_pair(Db3DecLow, Db3DecHigh);
+        } else if (waveName == "db4") {
+            return std::make_pair(Db4DecLow, Db4DecHigh);
+        } else if (waveName == "bior3.1") {
+            return std::make_pair(Bio31DecLow, Bio31DecHigh);
+        } else {
+            throw std::invalid_argument("Unknown wavelet name");
+        }
+    };
+
+    auto [Lo_d, Hi_d] = getWaveletFilters(WaveName);
+
+    std::cout << Lo_d << Hi_d<<std::endl;
+
+    auto [aprox ,detail ] = FastWaveletTransformAux(input,Lo_d,Hi_d );
+    Aproximations.push_back(aprox);
+    Details.push_back(detail);
+    if(DecLevel > 1){
+
+      for( int i = 1 ; i < DecLevel ; i++ ){
+
+        auto descompocision = FastWaveletTransformAux(aprox,Lo_d,Hi_d );
+        aprox = descompocision.first;
+        detail = descompocision.second;
+        Aproximations.push_back(aprox);
+        Details.push_back(detail);
+      }
+
+
+    }
+  return std::make_pair(Aproximations, Details);
+}
+
+std::pair<Eigen::VectorXcd,Eigen::VectorXcd> SignalData::FastWaveletTransformAux(const Eigen::VectorXcd& input,Eigen::VectorXcd Lo_d , Eigen::VectorXcd Hi_d){
+
+  // conseguir filtros segun el nombre
+  // Tipos de filtros
+
+  // conseguir aproximation FFTConvolve con low pass 
+    auto aprox = FFTConvolve(input, Lo_d );
+  // conseguir detail FFTConvolve con High pass
+    auto detail = FFTConvolve(input, Hi_d );
+  // hacer down sample de aproximation y de detail
+    int n = aprox.size();
+    int m = detail.size();
+    aprox = aprox(Eigen::seq(0,n-1,2));
+    detail = detail(Eigen::seq(0,m-1,2));
+
+  // llamar la descompocision denuevo hata que se acben los niveles
+
+  return std::make_pair(aprox, detail);
+}
+

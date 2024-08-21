@@ -18,6 +18,23 @@ void ExportToCSV(const Eigen::VectorXcd& approximation, const Eigen::VectorXcd& 
     
     file.close();
 }
+void ExportToCSVDecomp(const std::vector<Eigen::VectorXcd>& approximations, 
+                 const std::vector<Eigen::VectorXcd>& details, 
+                 const std::string& filename) {
+    std::ofstream file(filename);
+
+    file << "Level,Index,Approximation,Detail\n";
+    for (size_t level = 0; level < approximations.size(); ++level) {
+        const Eigen::VectorXcd& approximation = approximations[level];
+        const Eigen::VectorXcd& detail = details[level];
+        for (size_t i = 0; i < approximation.size(); ++i) {
+            file << level + 1 << "," << i << "," << approximation[i].real() << "," << detail[i].real() << "\n";
+        }
+    }
+
+    file.close();
+}
+
 void write_to_csv(const std::string& filename, const Eigen::VectorXcd& data) {
     std::ofstream file(filename);
 
@@ -86,7 +103,7 @@ int main (int argc, char *argv[]) {
         for(const auto di : Diff ){
           std::cout << di << " "; 
         }
-        std::cout << std::endl;*/
+        std::cout << std::endl;
         
         int N = 32768; // Number of samples
         double T = 1.0 / N; // Sampling period
@@ -101,7 +118,7 @@ int main (int argc, char *argv[]) {
         }
 
         // Write original sine wave to CSV
-        /*write_to_csv("sine_wave_before_fft.csv", sine_wave);
+        write_to_csv("sine_wave_before_fft.csv", sine_wave);
 
         auto after_fft = edfFile.Signals.FFT(sine_wave);
 
@@ -129,7 +146,7 @@ int main (int argc, char *argv[]) {
 
         write_to_csv("test_wave_after_Avergae.csv", aftter_moving_avergae);
 
-        std::cout << "Sine wave data has been written to CSV files.\n";*/
+        std::cout << "Sine wave data has been written to CSV files.\n";
       // Create Gabor filter
       int filter_size = 1024; // Choose a smaller size for the filter
       double center_freq = 5.0; // Center frequency of the Gabor filter
@@ -152,7 +169,7 @@ int main (int argc, char *argv[]) {
       std::chrono::duration<double> fft_conv_time = end - start;
       std::cout << "FFT Convolution Time: " << fft_conv_time.count() << " seconds" << std::endl;
 
-      write_to_csv("test_wave_after_fftConvolve.csv", fft_convolved_signal);
+      write_to_csv("test_wave_after_fftConvolve.csv", fft_convolved_signal);*/
 
       size_t numSamples = 1024;  // Number of samples
       double startFreq = 20.0;   // Start frequency in Hz
@@ -166,6 +183,11 @@ int main (int argc, char *argv[]) {
       write_to_csv("chirp_wave_before_.csv", chirpSignal);
       auto [approximation, detail] =edfFile.Signals.FastWaveletTransformHaar(chirpSignal);
       ExportToCSV(approximation, detail, "wavelet_output.csv");
+      
+      auto [approximations, details] = edfFile.Signals.FastWaveletTransform(chirpSignal, 3, "bior3.1");
+      ExportToCSVDecomp(approximations, details, "wavelet_output_decomp.csv");
+
+
     } catch (const std::runtime_error& e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;
         return 1;
