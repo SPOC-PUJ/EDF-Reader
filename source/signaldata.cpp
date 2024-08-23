@@ -1,4 +1,5 @@
 #include "signaldata.hpp"
+#include <cmath>
 #include <complex>
 #include <cstddef>
 #include <iostream>
@@ -373,3 +374,28 @@ std::pair<Eigen::VectorXcd,Eigen::VectorXcd> SignalData::FastWaveletTransformAux
   return std::make_pair(aprox, detail);
 }
 
+
+
+Eigen::VectorXcd SignalData::MorletWavelet(int N, double scale, double f0, double fb) {
+  Eigen::VectorXcd wavelet(N);
+    double t;
+    double normalization = 1 / sqrt(M_PI*fb);
+    for (int n = 0; n < N; ++n) {
+        t = (n - N / 2.0) / scale;
+        wavelet[n] = normalization * std::exp(-(1/fb) * t * t) * std::exp(std::complex<double>(0, 2 * M_PI * f0 * t));
+    }
+    return wavelet;
+}
+
+
+std::vector< Eigen::VectorXcd> SignalData::CWT(const Eigen::VectorXcd& signal,const std::vector<double>& scales){
+    int n = signal.size();
+    std::vector<Eigen::VectorXcd> coeffs;
+    for(const auto scale : scales){
+      const auto morlet = MorletWavelet(n, scale);
+      auto coef = FFTConvolve(signal, morlet);
+      coeffs.push_back(coef);
+    }
+
+  return coeffs;
+}

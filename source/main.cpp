@@ -48,6 +48,37 @@ void write_to_csv(const std::string& filename, const Eigen::VectorXcd& data) {
         std::cerr << "Unable to open file: " << filename << std::endl;
     }
 }
+// Function to write CWT results to CSV
+void ExportCWTToCSV(const std::vector<Eigen::VectorXcd>& cwtCoeffs, const std::vector<double>& scales, const std::string& filename) {
+    std::ofstream file(filename);
+
+    // Write header
+    file << "Scale,Index,Real,Imaginary\n";
+
+    // Write data
+    for (size_t i = 0; i < scales.size(); ++i) {
+        const auto& coeffs = cwtCoeffs[i];
+        for (int j = 0; j < coeffs.size(); ++j) {
+            file << scales[i] << "," << j << "," << coeffs[j].real() << "," << coeffs[j].imag() << "\n";
+        }
+    }
+
+    file.close();
+}
+
+std::vector<double> GenerateLogScales(double start, double end, int numScales) {
+    std::vector<double> scales(numScales);
+    double logStart = std::log10(start);
+    double logEnd = std::log10(end);
+    double logStep = (logEnd - logStart) / (numScales - 1);
+
+    for (int i = 0; i < numScales; ++i) {
+        scales[i] = std::pow(10, logStart + i * logStep);
+    }
+
+    return scales;
+}
+
 Eigen::VectorXcd GenerateChirpSignal(size_t numSamples, double startFreq, double endFreq, double duration, double samplingRate) {
     Eigen::VectorXcd chirpSignal(numSamples);
     double t;
@@ -73,6 +104,10 @@ Eigen::VectorXcd CreateGaborFilter(int size, double center_freq, double sigma) {
 
     return filter;
 }
+
+
+
+
 int main (int argc, char *argv[]) {
   
     if(argc != 2){
@@ -186,6 +221,59 @@ int main (int argc, char *argv[]) {
       
       auto [approximations, details] = edfFile.Signals.FastWaveletTransform(chirpSignal, 3, "bior3.1");
       ExportToCSVDecomp(approximations, details, "wavelet_output_decomp.csv");
+
+      auto morlet = edfFile.Signals.MorletWavelet(chirpSignal.size(), 50);
+      write_to_csv("Morlet_Wavelet.csv", morlet);
+      
+      auto morlet_after_fft = edfFile.Signals.FFT(morlet);
+        
+      write_to_csv("Morlet_Wavelet_afterFFT.csv", morlet_after_fft);
+
+      auto morlet_after_Ifft = edfFile.Signals.IFFT(morlet_after_fft);
+        
+      write_to_csv("Morlet_Wavelet_afterIFFT.csv", morlet_after_Ifft);
+
+      double start = 1.0;
+      double end = 1024.0;
+      int numScales = 100;
+
+      std::vector<double> scales = GenerateLogScales(start, end, numScales);
+      auto start2 = std::chrono::high_resolution_clock::now();
+
+      auto coeffs = edfFile.Signals.CWT(chirpSignal, scales);
+      auto end2 = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> direct_conv_time2 = end2 - start2;
+      std::cout << "CWT time: " << direct_conv_time2.count() << " seconds" << std::endl;
+
+      ExportCWTToCSV(coeffs,scales, "CWT.csv");
+
+      
+      numSamples = 2000;  // Number of samples
+      startFreq = 0.2;   // Start frequency in Hz
+      endFreq = 9;    // End frequency in Hz
+      duration = 2.0;     // Duration of the signal in seconds
+      samplingRate = 1024.0; // Sampling rate in Hz
+
+      // Generate the chirp signal
+
+      Eigen::VectorXcd chirp1 = GenerateChirpSignal(numSamples, startFreq, endFreq, duration, samplingRate);
+
+       numSamples = 2000;  // Number of samples
+      startFreq = 0.1;   // Start frequency in Hz
+      endFreq = 5;    // End frequency in Hz
+      duration = 2.0;     // Duration of the signal in seconds
+      samplingRate = 1024.0; // Sampling rate in Hz
+
+      // Generate the chirp signal
+
+      Eigen::VectorXcd chirp2 = GenerateChirpSignal(numSamples, startFreq, endFreq, duration, samplingRate);
+
+       Eigen::VectorXcd chirp = chirp1 + 0.6 * chirp2;
+       write_to_csv("chirp_strange.csv", chirp);
+
+      coeffs = edfFile.Signals.CWT(chirp, scales);
+
+      ExportCWTToCSV(coeffs,scales, "CWT2.csv");
 
 
     } catch (const std::runtime_error& e) {
