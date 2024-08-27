@@ -272,7 +272,7 @@ edf::edf(const std::string path){
     }
 
   }
-  for(auto const newSignal : vectors){
+  for(auto const & newSignal : vectors){
 
     Eigen::VectorXcd eigenVec(newSignal.size());
     for (size_t i = 0; i < newSignal.size(); ++i) {
@@ -314,7 +314,7 @@ void edf::PrintHeaderRecords(){
 
 void edf::PrintDataRecords(){
 
-  for(const auto Data : SignalsInfo){
+  for(const auto & Data : SignalsInfo){
     std::cout << "------------------------------------------------------------------"<<std::endl;
     std::cout <<"Label: "<< Data.Label<<std::endl;
     std::cout <<"Transducer: "<< Data.Transducer<<std::endl;
@@ -335,7 +335,7 @@ void edf::PrintDataRecords(){
 
 void edf::PrintSizeSignals(){
 
-  for(const auto signali : Signals.Signals){
+  for(const auto & signali : Signals.Signals){
     
     std::cout<<"Size of the vector is: "<< signali.size() <<std::endl;
 
@@ -392,7 +392,7 @@ void edf::WriteRawCsv(const std::string filename){
 void edf::PrintTopValues(int i){
 
 
-  for(const auto signali : Signals.Signals){
+  for(const auto &signali : Signals.Signals){
     
     for(int j=0;j<i;j++){
       std::cout<< signali[j] <<" ";
