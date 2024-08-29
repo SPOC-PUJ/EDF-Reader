@@ -34,7 +34,12 @@ public:
     std::pair< std::vector< Eigen::VectorXcd >, std::vector< Eigen::VectorXcd > > FastWaveletTransform(const Eigen::VectorXcd& input,int DecLevel,std::string WaveName);
     std::pair<Eigen::VectorXcd,Eigen::VectorXcd> FastWaveletTransformAux(const Eigen::VectorXcd& input,Eigen::VectorXcd Lo_d , Eigen::VectorXcd Hi_d);
     Eigen::VectorXcd MorletWavelet(int N, double scale, double f0 = 1.0,double fb = 1.0);
+    Eigen::VectorXcd MexicanHatWavelet(int N , double scale);
     std::vector< Eigen::VectorXcd> CWT(const Eigen::VectorXcd& signal,const std::vector<double>& scales);
+    Eigen::VectorXcd FFTEigen(Eigen::VectorXcd &a);
+    Eigen::VectorXcd IFFTEigen(Eigen::VectorXcd &a);
+    Eigen::VectorXcd FFTconvolveEigen(const Eigen::VectorXcd& x, const Eigen::VectorXcd& h);
+    std::vector< Eigen::VectorXcd> CWTEigen(const Eigen::VectorXcd& signal,const std::vector<double>& scales);
 private:
     Eigen::VectorXcd FFTAux(Eigen::VectorXcd a, bool invert = false);
 };

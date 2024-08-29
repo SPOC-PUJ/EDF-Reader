@@ -2,6 +2,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <ostream>
 #include <string>
 const double PI = acos(-1);
@@ -127,7 +128,9 @@ int main (int argc, char *argv[]) {
         edfFile.PrintTopValues(10);
         edfFile.Signals.CalculateDeviation();
         edfFile.Signals.PrintMeanAndDeviation();
-        /*auto sum = edfFile.Signals.RuningSum(edfFile.Signals.Signals[0]);
+        /*auto moving = edfFile.Signals.MovingAverage(edfFile.Signals.Signals[0], 10);
+        std::cout<< moving(Eigen::seq(0,10))<<std::endl;
+        auto sum = edfFile.Signals.RuningSum(edfFile.Signals.Signals[0]);
         std::cout << "Sum size = " << sum.size() <<std::endl;
         for(const auto num : sum ){
           std::cout << num << " "; 
@@ -226,9 +229,10 @@ int main (int argc, char *argv[]) {
       write_to_csv("Morlet_Wavelet.csv", morlet);
       
       auto morlet_after_fft = edfFile.Signals.FFT(morlet);
-        
+      
       write_to_csv("Morlet_Wavelet_afterFFT.csv", morlet_after_fft);
-
+      auto morlet_after_fft_Eigen = edfFile.Signals.FFTEigen(morlet);
+      write_to_csv("Morlet_Wavelet_afterFFT_Eigem.csv", morlet_after_fft_Eigen);
       auto morlet_after_Ifft = edfFile.Signals.IFFT(morlet_after_fft);
         
       write_to_csv("Morlet_Wavelet_afterIFFT.csv", morlet_after_Ifft);
@@ -247,7 +251,15 @@ int main (int argc, char *argv[]) {
 
       ExportCWTToCSV(coeffs,scales, "CWT.csv");
 
-      
+      start2 = std::chrono::high_resolution_clock::now();
+
+      coeffs = edfFile.Signals.CWTEigen(chirpSignal, scales);
+      end2 = std::chrono::high_resolution_clock::now();
+      direct_conv_time2 = end2 - start2;
+      std::cout << "CWT time: " << direct_conv_time2.count() << " seconds" << std::endl;
+
+      ExportCWTToCSV(coeffs,scales, "CWTEigen.csv");     
+
       numSamples = 2000;  // Number of samples
       startFreq = 0.2;   // Start frequency in Hz
       endFreq = 9;    // End frequency in Hz
@@ -274,7 +286,14 @@ int main (int argc, char *argv[]) {
       coeffs = edfFile.Signals.CWT(chirp, scales);
 
       ExportCWTToCSV(coeffs,scales, "CWT2.csv");
+      start2 = std::chrono::high_resolution_clock::now();
 
+      coeffs = edfFile.Signals.CWTEigen(chirp, scales);
+      end2 = std::chrono::high_resolution_clock::now();
+      direct_conv_time2 = end2 - start2;
+      std::cout << "CWT2Eigen time: " << direct_conv_time2.count() << " seconds" << std::endl;
+
+      ExportCWTToCSV(coeffs,scales, "CWTEigen2.csv");     
 
     } catch (const std::runtime_error& e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;

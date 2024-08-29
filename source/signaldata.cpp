@@ -6,6 +6,7 @@
 #include <ostream>
 #include <utility>
 #include <vector>
+#include "../unsupported/Eigen/FFT"
 
 const double PI = acos(-1);
     // db1 :
@@ -262,6 +263,35 @@ Eigen::VectorXcd SignalData::FFTConvolve(const Eigen::VectorXcd& x, const Eigen:
     return y_padded.head(n);
 }
 
+Eigen::VectorXcd SignalData::FFTEigen(Eigen::VectorXcd &a){
+  
+  Eigen::FFT<double> ft; 
+  Eigen::VectorXcd signalFFT;
+  ft.fwd(signalFFT,a);
+  return signalFFT;
+}
+
+Eigen::VectorXcd SignalData::IFFTEigen(Eigen::VectorXcd &a){
+  Eigen::FFT<double> ft; 
+  Eigen::VectorXcd signalFFT;
+  ft.inv(signalFFT,a);
+  return signalFFT;
+}
+
+
+Eigen::VectorXcd SignalData::FFTconvolveEigen(const Eigen::VectorXcd& x, const Eigen::VectorXcd& h){
+  Eigen::VectorXcd signalFFT;
+  Eigen::VectorXcd Kernel;
+  Eigen::FFT<double> ft;
+  ft.fwd(signalFFT, x);
+  ft.fwd(Kernel, h);
+  Eigen::VectorXcd convFFT = signalFFT.cwiseProduct(Kernel);
+  Eigen::VectorXcd convolutionResult;
+  ft.inv(convolutionResult, convFFT);
+  return convolutionResult;
+}
+
+
 Eigen::VectorXcd SignalData::MovingAverage(const Eigen::VectorXcd &a, int window_size) {
     int n = a.size();
     Eigen::VectorXcd result(n);
@@ -394,6 +424,18 @@ std::vector< Eigen::VectorXcd> SignalData::CWT(const Eigen::VectorXcd& signal,co
     for(const auto scale : scales){
       const auto morlet = MorletWavelet(n, scale);
       auto coef = FFTConvolve(signal, morlet);
+      coeffs.push_back(coef);
+    }
+
+  return coeffs;
+}
+
+std::vector< Eigen::VectorXcd> SignalData::CWTEigen(const Eigen::VectorXcd& signal,const std::vector<double>& scales){
+    int n = signal.size();
+    std::vector<Eigen::VectorXcd> coeffs;
+    for(const auto scale : scales){
+      const auto morlet = MorletWavelet(n, scale);
+      auto coef = FFTconvolveEigen(signal, morlet);
       coeffs.push_back(coef);
     }
 
