@@ -279,16 +279,31 @@ Eigen::VectorXcd SignalData::IFFTEigen(Eigen::VectorXcd &a){
 }
 
 
-Eigen::VectorXcd SignalData::FFTconvolveEigen(const Eigen::VectorXcd& x, const Eigen::VectorXcd& h){
+Eigen::VectorXcd SignalData::FFTconvolveEigen(const Eigen::VectorXcd& x, const Eigen::VectorXcd& h, bool shift){
+  int N = x.size();
+
+  auto h_padded = ZeroPadGivenSize(h, N);
   Eigen::VectorXcd signalFFT;
   Eigen::VectorXcd Kernel;
+
   Eigen::FFT<double> ft;
+
   ft.fwd(signalFFT, x);
-  ft.fwd(Kernel, h);
+  ft.fwd(Kernel, h_padded);
+  if(shift){
+    // Frequency domain shift to center the wavelet
+    Eigen::VectorXcd phaseShift(N);
+    for (int k = 0; k < N; ++k) {
+        double freq = 2.0 * M_PI * k / N;
+        phaseShift[k] = std::exp(std::complex<double>(0, -freq * (static_cast<double>(N) / 2)));
+    }
+    Kernel = Kernel.cwiseProduct(phaseShift);
+
+  }
   Eigen::VectorXcd convFFT = signalFFT.cwiseProduct(Kernel);
   Eigen::VectorXcd convolutionResult;
   ft.inv(convolutionResult, convFFT);
-  return convolutionResult;
+  return convolutionResult.head(x.size());
 }
 
 
@@ -363,7 +378,6 @@ std::pair< std::vector< Eigen::VectorXcd >, std::vector< Eigen::VectorXcd > > Si
 
     auto [Lo_d, Hi_d] = getWaveletFilters(WaveName);
 
-    std::cout << Lo_d << Hi_d<<std::endl;
 
     auto [aprox ,detail ] = FastWaveletTransformAux(input,Lo_d,Hi_d );
     Aproximations.push_back(aprox);
@@ -390,9 +404,9 @@ std::pair<Eigen::VectorXcd,Eigen::VectorXcd> SignalData::FastWaveletTransformAux
   // Tipos de filtros
 
   // conseguir aproximation FFTConvolve con low pass 
-    auto aprox = FFTConvolve(input, Lo_d );
+    auto aprox = FFTconvolveEigen(input, Lo_d );
   // conseguir detail FFTConvolve con High pass
-    auto detail = FFTConvolve(input, Hi_d );
+    auto detail = FFTconvolveEigen(input, Hi_d );
   // hacer down sample de aproximation y de detail
     int n = aprox.size();
     int m = detail.size();
@@ -435,7 +449,7 @@ std::vector< Eigen::VectorXcd> SignalData::CWTEigen(const Eigen::VectorXcd& sign
     std::vector<Eigen::VectorXcd> coeffs;
     for(const auto scale : scales){
       const auto morlet = MorletWavelet(n, scale);
-      auto coef = FFTconvolveEigen(signal, morlet);
+      auto coef = FFTconvolveEigen(signal, morlet,true);
       coeffs.push_back(coef);
     }
 

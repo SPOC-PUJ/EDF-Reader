@@ -38,7 +38,7 @@ public:
     std::vector< Eigen::VectorXcd> CWT(const Eigen::VectorXcd& signal,const std::vector<double>& scales);
     Eigen::VectorXcd FFTEigen(Eigen::VectorXcd &a);
     Eigen::VectorXcd IFFTEigen(Eigen::VectorXcd &a);
-    Eigen::VectorXcd FFTconvolveEigen(const Eigen::VectorXcd& x, const Eigen::VectorXcd& h);
+    Eigen::VectorXcd FFTconvolveEigen(const Eigen::VectorXcd& x, const Eigen::VectorXcd& h,bool shift = false);
     std::vector< Eigen::VectorXcd> CWTEigen(const Eigen::VectorXcd& signal,const std::vector<double>& scales);
 private:
     Eigen::VectorXcd FFTAux(Eigen::VectorXcd a, bool invert = false);

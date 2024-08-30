@@ -283,7 +283,7 @@ int main (int argc, char *argv[]) {
        Eigen::VectorXcd chirp = chirp1 + 0.6 * chirp2;
        write_to_csv("chirp_strange.csv", chirp);
 
-      coeffs = edfFile.Signals.CWT(chirp, scales);
+      coeffs = edfFile.Signals.CWTEigen(chirp, scales);
 
       ExportCWTToCSV(coeffs,scales, "CWT2.csv");
       start2 = std::chrono::high_resolution_clock::now();
