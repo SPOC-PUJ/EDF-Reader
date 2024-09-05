@@ -303,7 +303,7 @@ Eigen::VectorXcd SignalData::FFTconvolveEigen(const Eigen::VectorXcd& x, const E
   Eigen::VectorXcd convFFT = signalFFT.cwiseProduct(Kernel);
   Eigen::VectorXcd convolutionResult;
   ft.inv(convolutionResult, convFFT);
-  return convolutionResult.head(x.size());
+  return convolutionResult.head(N);
 }
 
 
@@ -408,14 +408,17 @@ std::pair<Eigen::VectorXcd,Eigen::VectorXcd> SignalData::FastWaveletTransformAux
   // conseguir detail FFTConvolve con High pass
     auto detail = FFTconvolveEigen(input, Hi_d );
   // hacer down sample de aproximation y de detail
+
+ 
     int n = aprox.size();
     int m = detail.size();
-    aprox = aprox(Eigen::seq(0,n-1,2));
-    detail = detail(Eigen::seq(0,m-1,2));
+
+    auto aproxi = aprox(Eigen::seq(0,n-1,2));
+    auto detaili = detail(Eigen::seq(0,m-1,2));
 
   // llamar la descompocision denuevo hata que se acben los niveles
 
-  return std::make_pair(aprox, detail);
+  return std::make_pair(aproxi, detaili);
 }
 
 

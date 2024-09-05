@@ -208,7 +208,7 @@ int main (int argc, char *argv[]) {
       std::cout << "FFT Convolution Time: " << fft_conv_time.count() << " seconds" << std::endl;
 
       write_to_csv("test_wave_after_fftConvolve.csv", fft_convolved_signal);*/
-
+      edfFile.Signals.FastWaveletTransform(edfFile.Signals.Signals[0], 3, "bior3.1");
       size_t numSamples = 1024;  // Number of samples
       double startFreq = 20.0;   // Start frequency in Hz
       double endFreq = 100.0;    // End frequency in Hz
