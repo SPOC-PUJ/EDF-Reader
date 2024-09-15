@@ -293,8 +293,9 @@ int main (int argc, char *argv[]) {
       direct_conv_time2 = end2 - start2;
       std::cout << "CWT2Eigen time: " << direct_conv_time2.count() << " seconds" << std::endl;
 
-      ExportCWTToCSV(coeffs,scales, "CWTEigen2.csv");     
+      ExportCWTToCSV(coeffs,scales, "CWTEigen2.csv");    
 
+      write_to_csv("avergae.csv",edfFile.Signals.SignalsAverge(edfFile.Signals.Signals));
     } catch (const std::runtime_error& e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;
         return 1;

@@ -458,3 +458,35 @@ std::vector< Eigen::VectorXcd> SignalData::CWTEigen(const Eigen::VectorXcd& sign
 
   return coeffs;
 }
+
+
+
+
+Eigen::VectorXcd SignalData::SignalsAverge(std::vector<Eigen::VectorXcd> Input) {
+    int numVectors = Input.size();
+    if (numVectors == 0) {
+        return Eigen::VectorXcd(); // Return an empty vector if the input is empty
+    }
+
+    int size = Input[0].size();
+    
+    // Ensure all vectors have the same size
+    for (const auto& vec : Input) {
+        if (vec.size() != size) {
+            throw std::runtime_error("All input vectors must have the same size.");
+        }
+    }
+
+    // Initialize a vector of complex numbers to store the sum of all input vectors
+    Eigen::VectorXcd meanVector = Eigen::VectorXcd::Zero(size);
+    
+    // Accumulate the sum of all vectors
+    for (const auto& vec : Input) {
+        meanVector += vec;
+    }
+
+    // Compute the mean by dividing the sum by the number of vectors
+    meanVector /= static_cast<double>(numVectors);
+
+    return meanVector;
+}
