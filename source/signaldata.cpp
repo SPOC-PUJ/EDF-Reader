@@ -1,4 +1,5 @@
 #include "signaldata.hpp"
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <cstddef>
@@ -6,6 +7,7 @@
 #include <ostream>
 #include <utility>
 #include <vector>
+#include <execution>
 #include "../unsupported/Eigen/FFT"
 
 const double PI = acos(-1);
@@ -437,27 +439,36 @@ Eigen::VectorXcd SignalData::MorletWavelet(int N, double scale, double f0, doubl
 
 std::vector< Eigen::VectorXcd> SignalData::CWT(const Eigen::VectorXcd& signal,const std::vector<double>& scales){
     int n = signal.size();
-    std::vector<Eigen::VectorXcd> coeffs;
-    for(const auto scale : scales){
+    std::vector<Eigen::VectorXcd> coeffs(scales.size());
+    std::transform(std::execution::par, scales.begin(), scales.end(), coeffs.begin(), [&](double scale){
+      const auto morlet = MorletWavelet(n, scale);
+      return FFTConvolve(signal, morlet);
+  } );
+    /*for(const auto scale : scales){
       const auto morlet = MorletWavelet(n, scale);
       auto coef = FFTConvolve(signal, morlet);
       coeffs.push_back(coef);
-    }
+    }*/
 
   return coeffs;
 }
 
-std::vector< Eigen::VectorXcd> SignalData::CWTEigen(const Eigen::VectorXcd& signal,const std::vector<double>& scales){
+std::vector<Eigen::VectorXcd> SignalData::CWTEigen(const Eigen::VectorXcd& signal, const std::vector<double>& scales) {
     int n = signal.size();
-    std::vector<Eigen::VectorXcd> coeffs;
-    for(const auto scale : scales){
+    std::vector<Eigen::VectorXcd> coeffs(scales.size());  // Pre-allocate space
+
+    std::transform(std::execution::par, scales.begin(), scales.end(), coeffs.begin(), [&](double scale) {
+        const auto morlet = MorletWavelet(n, scale);
+        return FFTconvolveEigen(signal, morlet, true);  // Each result is placed in the corresponding index
+    });
+   /* for(const auto scale : scales){
       const auto morlet = MorletWavelet(n, scale);
       auto coef = FFTconvolveEigen(signal, morlet,true);
       coeffs.push_back(coef);
-    }
-
-  return coeffs;
+    }*/
+    return coeffs;
 }
+
 
 
 

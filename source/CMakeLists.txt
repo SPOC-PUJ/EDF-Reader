@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 project(DSP)
 #set(CMAKE_BUILD_TYPE Debug)
+find_package(TBB REQUIRED)
 add_executable(EDFReader main.cpp edf.cpp signaldata.cpp)
-
 
 # Add compiler options for more warnings and checks
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -18,4 +18,13 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
         -Wduplicated-cond # Warn if 'if' and 'else' have identical conditions
         -Wnull-dereference # Warn if a null pointer dereference is detected
     )
-  endif()
+endif()
+target_link_libraries(EDFReader TBB::tbb)
+add_custom_target(ValgrindCheck
+    COMMAND valgrind --leak-check=full --track-origins=yes --show-reachable=yes --error-exitcode=1 ./EDFReader ${CMAKE_CURRENT_BINARY_DIR}/testfiles/test.edf
+    DEPENDS EDFReader
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Running Valgrind to check for memory leaks"
+)
+
+
